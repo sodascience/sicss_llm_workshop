@@ -1,0 +1,19 @@
+[project]
+name = "workshop-llm-data-collection"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "ipykernel>=7.2.0",
+    "krippendorff>=0.8.2",
+    "langchain>=1.2.17",
+    "langchain-community>=0.4.1",
+    "langchain-huggingface>=1.2.2",
+    "langchain-openai>=1.2.1",
+    "mlflow>=3.11.1",
+    "numpy>=2.4.4",
+    "pandas>=2.3.3",
+    "pydantic>=2.13.3",
+    "tqdm>=4.67.3",
+]
