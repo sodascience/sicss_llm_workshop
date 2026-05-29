@@ -1,0 +1,472 @@
+---
+jupyter:
+  kernelspec:
+    display_name: R
+    name: ir
+    language: R
+---
+
+<a href="https://colab.research.google.com/github/fqixiang/workshop_llm_data_collection/blob/main/notebooks/llm_data_collection_R.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+
+# Using Large Language Models for Data Collection/Annotation in Social Sciences and Humanities
+
+## Package setup (Colab or local)
+
+- **Colab (recommended for a low-effort start)**: Run the next cell to install the required packages via `install.packages()`.
+
+- **Local notebook (recommended for local model deployment)**:
+  - [Option 1 (easy)]: Use notebook in RStudio
+    - Download the Quarto version of the notebook [here](https://github.com/sodascience/workshop_llm_data_collection/tree/main/notebooks/llm_data_collection_R.qmd).
+    - Open the file in RStudio.
+  - [Option 2]: Project with environment management
+    - Download or clone the repo, then use [`renv`](https://rstudio.github.io/renv/) for environment management:
+      - `git clone https://github.com/sodascience/workshop_llm_data_collection.git`
+      - `cd workshop_llm_data_collection`
+    - Open the project in RStudio and run `renv::restore()` to install all dependencies.
+    - If you use a different environment manager, ensure the dependencies are installed before continuing.
+
+```{r}
+#| vscode: {languageId: r}
+# Install required packages
+packages <- c("ellmer", "irr", "cli", "jsonlite", "tidyverse")
+missing_packages <- packages[!packages %in% rownames(installed.packages())]
+if (length(missing_packages) > 0) {
+  install.packages(missing_packages)
+}
+```
+
+```{r}
+#| vscode: {languageId: r}
+library(ellmer)    # LLM API interfacing in R
+library(irr)       # inter-rater reliability (Krippendorff's Alpha)
+library(cli)       # progress bars
+library(jsonlite)  # JSONL logging
+library(tidyverse) # data manipulation and visualization
+```
+
+## Gabrielle Martins van Jaarsveld's SoDa fellowship dataset
+
+Feel free to use your own data. By default, we will use a toy dataset from Gabrielle Martins van Jaarsveld's [SoDa fellowship](https://odissei-soda.nl/fellowship/) project on using LLMs to annotate student conversations with regard to different aspects of self-regulated learning. In this toy dataset, we focus on the **goal specificity** aspect of self-regulated learning, which concerns how specific and detailed a student's goals are.
+
+The following subset of columns are available:
+
+- `id`: The row id.
+
+- `conversation`: The anonymized text of a conversation to be evaluated (by humans or LLMs).
+
+- `best_llm_specificity_score`: The specificity score of a conversation based on the best performing LLM and prompt identified by Gabrielle in her project. It varies between 0, 1 and 2.
+
+- `expert_specificity_score`: The specificity score of a conversation based on human expert annotators. It can be treated as gold standard (i.e., free from measurement error). It varies between 0, 1 and 2.
+
+- `grade`: The course grade of a student, varying from 1 to 10.
+
+## Data loading
+
+```{r}
+#| vscode: {languageId: r}
+# Download the example data
+data_url <- "https://sodascience.github.io/workshop_llm_data_collection/data/srl_data_example.csv"
+
+# Load CSV into a dataframe
+df <- read_csv(data_url)
+```
+
+```{r}
+#| vscode: {languageId: r}
+# Preview the first 15 rows
+head(df, 15)
+```
+
+Note that only the first 10 rows contain the anonymized text of the conversations. We will use these texts for the prompting experiments in this notebook.
+
+```{r}
+#| vscode: {languageId: r}
+# Use these 10 rows to define test_ids and test_conversations
+test_ids <- df |> slice(1:10) |> pull(id) |> as.character()
+test_conversations <- df |> slice(1:10) |> pull(conversation)
+```
+
+## Using ellmer to call open-source model APIs (default: Groq)
+
+We will be using the R package `ellmer` to perform our prompting experiments. One great advantage of using `ellmer` is that it takes away the trouble of having to learn different LLM APIs or writing API-specific code. Instead, it allows you to call different LLM APIs (both open-source and proprietary) effortlessly (relatively speaking) with simple modifications of your `ellmer` code!
+
+Below, we default to the **Groq** API (for open-source models). We also keep two additional options: [**SURF AI Hub**](https://servicedesk.surf.nl/wiki/spaces/WIKI/pages/219086851/AI-Hub+WiLLMa+Pilot+phase) for securely working with sensitive data and open-source models in the Netherlands, and **OpenAI** for proprietary models.
+
+To explore other providers and models supported by ellmer, check out https://ellmer.tidyverse.org/reference/index.html.
+
+### API keys
+Note that you need an API key for each specific provider to call their models.
+
+For **Groq**, you can get an API key for free by creating an account on https://console.groq.com/. Groq allows for free (but limited) usage of their models with an API key.
+
+For **SURF AI Hub**, it is in pilot phase and requires an [application](https://servicedesk.surf.nl/wiki/spaces/WIKI/pages/222464732/Onboarding#Onboarding-Step1%3AShowinterest) and approval process to get access.
+
+For **OpenAI**, you can get an API key by creating an account on https://platform.openai.com/. Note that OpenAI does not offer free usage of their models.
+
+After obtaining your API key(s), you will need to set them as environment variables (e.g., `GROQ_API_KEY` for Groq and `OPENAI_API_KEY` for SURF AI Hub and OpenAI) before running the code cells that call the models. In the next cell, you will be asked to input your API key(s) if you haven't set them as environment variables yet.
+
+### Initialize an LLM model
+**Groq (default)**
+
+By default, we use the Groq API.
+
+You can swap `groq_model_name` with any chat-capable model that Groq supports. For example:
+
+- `"meta-llama/llama-4-scout-17b-16e-instruct"`
+- `"openai/gpt-oss-20b"`
+
+Both models support structured output (see later). To see more options, check the Groq model list: https://console.groq.com/docs/models.
+
+**SURF AI Hub**
+
+Two models are currently available on SURF AI Hub: `Llama 3.3 70b Instruct AWQ` and `openai/gpt-oss-120b`. If you want to use SURF AI Hub, set `default_provider <- "surf_ai_hub"` in the next cell.
+
+**OpenAI**
+
+If you want OpenAI, set `default_provider <- "openai"` in the next cell. For OpenAI model options, see https://platform.openai.com/docs/models.
+
+**In the next cell, enter your API key when prompted.**
+
+```{r}
+#| vscode: {languageId: r}
+# Choose a provider (default: Groq, hosted endpoint)
+default_provider <- "huggingface"  # "surf_ai_hub" or "openai"
+
+# Set model parameters
+temperature <- 0      # Lower is more deterministic
+max_tokens  <- 1000
+seed        <- NULL   # Set an integer for reproducible sampling if supported by the provider
+
+# Set model names
+groq_model_name   <- "meta-llama/llama-4-scout-17b-16e-instruct"
+surf_ai_hub_model_name <- "Llama 3.3 70b Instruct AWQ"
+openai_model_name <- "gpt-4o-mini"
+model_names <- list(
+  groq = groq_model_name,
+  surf_ai_hub = surf_ai_hub_model_name,
+  openai = openai_model_name
+)
+model_name <- model_names[[default_provider]]
+
+if (default_provider == "groq") {
+  Sys.setenv(GROQ_API_KEY = readline(prompt = "Enter API key for Groq: "))
+} else if (default_provider == "surf_ai_hub") {
+  Sys.setenv(SURF_AI_HUB_API_KEY = readline(prompt = "Enter API key for SURF AI Hub: "))
+  Sys.setenv(OPENAI_API_KEY = Sys.getenv("SURF_AI_HUB_API_KEY"))
+} else if (default_provider == "openai") {
+  Sys.setenv(OPENAI_API_KEY = readline(prompt = "Enter API key for OpenAI: "))
+} else {
+  stop(paste("Unsupported provider:", default_provider))
+}
+
+# Helper: create a fresh chat object for each request
+# (prevents conversation history from bleeding between independent calls)
+make_chat <- function(system_prompt = NULL) {
+  api_args <- list(temperature = temperature, max_tokens = max_tokens)
+  if (!is.null(seed)) api_args$seed <- seed
+  if (default_provider == "groq") {
+    chat_groq(
+      model         = model_name,
+      system_prompt = system_prompt,
+      api_args      = api_args,
+      echo          = "none"
+    )
+  } else if (default_provider == "surf_ai_hub") {
+    chat_openai_compatible(
+      model         = model_name,
+      system_prompt = system_prompt,
+      api_args      = api_args,
+      echo          = "none",
+      base_url      = "https://willma.surf.nl/api/v0"
+    )
+  } else if (default_provider == "openai") {
+    chat_openai(
+      model         = model_name,
+      system_prompt = system_prompt,
+      api_args      = api_args,
+      echo          = "none"
+    )
+  } else {
+    stop(paste("Unsupported provider:", default_provider))
+  }
+}
+```
+
+## Working with a single prompt
+
+Let's start with the system prompt (i.e., high-level instruction to the model).
+
+```{r}
+#| vscode: {languageId: r}
+# Define a system prompt that explains the task and scoring rubric
+system_prompt <- "
+You are an expert in educational assessment and goal evaluation, with
+specialized expertise in applying deductive coding schemes to score the quality
+and content of student goals.
+
+##TASK##
+A university student was given a series of prompts, guiding them through the
+process of setting and elaborating on an academic goal for the coming week. You
+will be provided with the entire conversation including the prompts, and the
+student answers. Your objective is to assess the specificity of of the student's
+goal on a scale of 0 to 2 based on the entire conversation.
+"
+```
+
+In `ellmer`, a fresh chat object carries the system prompt and the user's conversation text is passed directly to `chat$chat()`. Prompt the model and inspect the response!
+
+```{r}
+#| vscode: {languageId: r}
+# Create a chat and make the API call to get a single response
+chat <- make_chat(system_prompt = system_prompt)
+single_response <- chat$chat(test_conversations[[1]])
+cat(single_response)
+```
+
+Voila! You have your first successful prompting interaction with an LLM API!
+
+## Working with multiple prompts
+Next, we go beyond a single prompt. Instead, we will work with **multiple prompts** at the same time.
+
+**Tip**: Start with a small number of rows first to estimate time and (if using a paid API) cost to avoid surprises.
+
+```{r}
+#| vscode: {languageId: r}
+# Iterate over the conversations and score them
+multiple_responses <- list()
+cli_progress_bar("Processing Requests", total = length(test_ids))
+for (i in seq_along(test_ids)) {
+  chat <- make_chat(system_prompt = system_prompt)
+  multiple_responses[[test_ids[[i]]]] <- chat$chat(test_conversations[[i]])
+  cli_progress_update()
+}
+cli_progress_done()
+```
+
+Inspect the responses!
+
+```{r}
+#| vscode: {languageId: r}
+# Show an example response
+cat(multiple_responses[["chat_2"]])
+```
+
+## Using structured output with a single prompt
+
+Use the `type_object()` and related `type_*()` functions from `ellmer` to specify the desired output format. Unlike the Python/LangChain approach — where providers like Hugging Face require explicit JSON instructions and manual parsing — `ellmer`'s `$chat_structured()` method works uniformly across providers by leveraging each provider's tool-calling or structured output API under the hood.
+
+For example:
+
+```{r}
+#| vscode: {languageId: r}
+# Define the expected structured output schema
+schema <- list(
+  type = "object",
+  additionalProperties = FALSE,
+  required = c("goal_specificity", "reasoning"),
+  properties = list(
+    goal_specificity = list(
+      type = "integer",
+      description = "Score for goal specificity. Only return an integer from 0 to 2",
+      minimum = 0,
+      maximum = 2
+    ),
+    reasoning = list(
+      type = "string",
+      description = "The reasoning to justify the score"
+    )
+  )
+)
+
+output_structure <- type_from_schema(
+  jsonlite::toJSON(schema, auto_unbox = TRUE)
+)
+```
+
+Try with a single prompt request.
+
+```{r}
+#| vscode: {languageId: r}
+# Create a chat and get a structured response for the first conversation
+chat <- make_chat(system_prompt = system_prompt)
+single_structured_response <- chat$chat_structured(test_conversations[[1]], type = output_structure)
+
+# Convert to a plain list for inspection
+as.list(single_structured_response)
+```
+
+## Using structured output with multiple prompts
+
+Being able to work with multiple prompts at the same time and obtain structured output will save you a substantial amount of time in research projects!
+
+```{r}
+#| vscode: {languageId: r}
+# Score multiple conversations with structured output
+multiple_structured_responses <- list()
+cli_progress_bar("Processing Messages", total = length(test_ids))
+for (i in seq_along(test_ids)) {
+  chat <- make_chat(system_prompt = system_prompt)
+  multiple_structured_responses[[test_ids[[i]]]] <- chat$chat_structured(
+    test_conversations[[i]], type = output_structure
+  )
+  cli_progress_update()
+}
+cli_progress_done()
+```
+
+Display all the structured responses:
+
+```{r}
+#| vscode: {languageId: r}
+# Extract the scores from the structured responses
+structured_scores <- map_int(multiple_structured_responses, "goal_specificity")
+structured_scores
+```
+
+```{r}
+#| vscode: {languageId: r}
+# Extract the reasoning text from the structured responses
+structured_reasonings <- map_chr(multiple_structured_responses, "reasoning")
+structured_reasonings
+```
+
+## Enhancing reproducibility: log prompts and decisions
+
+To make your data collection/annotation reproducible, log each prompt, model configuration, and model output. The block below writes CSV and JSONL logs to the `logs/` folder with a timestamped filename.
+
+As these logs include prompts and model outputs, make sure to remove or anonymize sensitive information before sharing logs.
+
+We show below how to log the prompts and responses from the structured output experiment, but you can apply the same logic to log any other prompting experiment you do in this notebook or in your own projects.
+
+```{r}
+#| vscode: {languageId: r}
+# Build a prompt + decision log
+dir.create("logs", showWarnings = FALSE)
+timestamp     <- format(Sys.time(), "%Y%m%d_%H%M%S")
+log_csv_path  <- paste0("logs/prompt_log_", timestamp, ".csv")
+log_jsonl_path <- paste0("logs/prompt_log_", timestamp, ".jsonl")
+
+# Score multiple conversations with structured output
+multiple_structured_responses <- list()  # Store the structured responses
+prompt_logs                   <- list()  # Store the prompt logs
+
+cli_progress_bar("Processing Messages", total = length(test_ids))
+for (i in seq_along(test_ids)) {
+  chat <- make_chat(system_prompt = system_prompt)
+  structured_response <- chat$chat_structured(test_conversations[[i]], type = output_structure)
+  multiple_structured_responses[[test_ids[[i]]]] <- structured_response
+
+  # Log the prompt, model config, and output
+  prompt_logs[[i]] <- list(
+    request_id    = test_ids[[i]],
+    provider      = default_provider,
+    model         = model_name,
+    temperature   = temperature,
+    max_tokens    = max_tokens,
+    seed          = if (is.null(seed)) NA else seed,
+    system_prompt = trimws(system_prompt),
+    user_prompt   = test_conversations[[i]],
+    score         = structured_response$goal_specificity,
+    reasoning     = structured_response$reasoning
+  )
+  cli_progress_update()
+}
+cli_progress_done()
+
+# Save logs to CSV and JSONL
+prompt_log_df <- bind_rows(prompt_logs)
+write_csv(prompt_log_df, log_csv_path)
+# Write each record as a separate JSON line (JSONL format)
+write_lines(
+  sapply(prompt_logs, \(x) toJSON(x, auto_unbox = TRUE)),
+  log_jsonl_path
+)
+
+# View the prompt log dataframe
+head(prompt_log_df, 3)
+```
+
+## Check annotation quality
+
+Implement a handy function to calculate Krippendorff's Alpha (i.e., agreement) between two vectors of specificity scores.
+
+```{r}
+#| vscode: {languageId: r}
+compute_krippendorff_alpha <- function(x, y) {
+  # Format data into a reliability matrix (rows = raters, cols = items)
+  rating_matrix <- rbind(x, y)
+  # Compute Krippendorff's Alpha (ordinal metric)
+  kripp.alpha(rating_matrix, method = "ordinal")
+}
+```
+
+Let's check the agreement between the specificity scores we got from the LLM above and the human expert-coded specificity scores!
+
+```{r}
+#| vscode: {languageId: r}
+# Compare agreement between expert and LLM ratings
+expert_specificity_scores         <- df |> slice(1:10) |> pull(expert_specificity_score)
+structured_llm_specificity_scores <- map_int(multiple_structured_responses, "goal_specificity")
+cat("Krippendorff's Alpha:")
+compute_krippendorff_alpha(structured_llm_specificity_scores, expert_specificity_scores)
+```
+
+Not a great agreement score!
+
+How about the agreement between the LLM specificity scores that already came with the dataset (i.e., column `best_llm_specificity_score`) and the human expert-coded scores?
+
+Note that `best_llm_specificity_score` is based on prompts that were carefully engineered by Gabrielle.
+
+```{r}
+#| vscode: {languageId: r}
+best_llm_specificity_scores <- df |> slice(1:10) |> pull(best_llm_specificity_score)
+cat("Krippendorff's Alpha:")
+compute_krippendorff_alpha(best_llm_specificity_scores, expert_specificity_scores)
+```
+
+Wow! Much better!
+
+## Exercise: Try different prompting techniques to get better results!
+
+For example:
+
+1. Improve clarity & specificity
+2. Role-based prompting
+3. Step-by-step reasoning (Chain-of-Thought Prompting)
+4. Few-shot prompting
+5. Output structuring
+6. Self-consistency prompting
+
+Use the previous `compute_krippendorff_alpha` function to check the LLM's annotation quality.
+
+```{r}
+#| vscode: {languageId: r}
+# Let's write some code!
+```
+
+## Local open-weights deployment (Ollama)
+
+If you prefer to run an open-weights model locally, you can use Ollama. This works best on your own machine (not Colab). Install Ollama via https://ollama.com/download, pull a model, and then point ellmer to the local server.
+
+Example commands (run in a terminal) with an extremely small model (smollm, 135M parameters) for testing purposes:
+- `ollama pull smollm:135m`
+- `ollama serve`  (starts the local server at http://localhost:11434; skip if already running)
+
+```{r}
+#| vscode: {languageId: r}
+# Use a local model via Ollama
+local_chat <- chat_ollama(
+  model         = "smollm:135m",
+  base_url      = "http://localhost:11434",
+  system_prompt = system_prompt,
+  api_args      = list(temperature = 0),
+  echo          = "none"
+)
+
+# Try a single local call with the first conversation defined earlier
+single_local_response <- local_chat$chat(test_conversations[[1]])
+cat(single_local_response)
+```
+
+Note that because the model is extremely small (135M parameters), the quality of responses will be low. For better quality, you can try larger models available on https://ollama.com/search.
+
