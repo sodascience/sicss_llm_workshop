@@ -1,16 +1,19 @@
 # SICSS Workshop Data Collection/Annotation & Inferences with LLMs in Social Sciences
 
-This repository contains the code and slides for the SICSS workshop on data collection/annotation and inference with Large Language Models. The materials on this page are [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/) licensed.
+This repository contains the code and slides for the SICSS workshop on data collection/annotation and inference with Large Language Models. A more general version of this repository, which is not specific to the SICSS computing infrastructure (e.g., Python 3.8.18, R 4.5.3, SANE), is available [here](https://github.com/sodascience/workshop_llm_data_collection).
 
-![cc](https://mirrors.creativecommons.org/presskit/icons/cc.svg) ![by](https://mirrors.creativecommons.org/presskit/icons/by.svg)
+The materials on this page are [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/) licensed.
 
 ## Technical details
 - No previous experience with LLMs is required.
 - `R` or `python` programming knowledge is desired but not required.
-- In python we will use [`langchain`](https://python.langchain.com/docs/introduction/), in R we will use [`ellmer`](https://ellmer.tidyverse.org/) to interact with LLM APIs.
+- In python we will use [`langchain`](https://python.langchain.com/docs/introduction/), in R we will use [`ellmer`](https://ellmer.tidyverse.org/) to streamline interaction with LLM APIs.
 
 ## Preparation (API keys)
 You will need an API key for the respective provider you plan to use.
+
+If you are attending the workshop in person, detailed instructions for obtaining API keys will be provided by the instructor separately. Otherwise, you can follow the instructions below to obtain API keys for the providers we will use in the workshop:
+
 
 - **Hugging Face Inference API:**
 	1. Create an account at https://huggingface.co/.
@@ -32,14 +35,15 @@ Save your API keys in a safe place. The notebooks will prompt you to enter the k
 
 ## Full Workshop Schedule
 
-| Time  | Title                                | Resource                                                                            |
+| Time  | Title                                | Notebooks                                                                            |
 | :---- | :----------------------------------- | :------------------------------------------------------------------------------------------- |
 | 09:30 | LLM fundamentals for Social Sciences |                                                  |
-| 11:00 | Coffee break                         | Coffee is provided!                                                                          |
-| 11:20 | Data collection/annotation with LLMs | [`python`](https://colab.research.google.com/github/sodascience/sicss_llm_workshop/blob/main/notebooks/llm_data_collection_py.ipynb), [`R`](https://colab.research.google.com/github/sodascience/sicss_llm_workshop/blob/main/notebooks/llm_data_collection_R.ipynb) |
-| 12:30 | Break                                | Lunch is provided!                                                                           |
-| 13:15 | Inference with LLM annotations    | [`python`](https://colab.research.google.com/github/sodascience/sicss_llm_workshop/blob/main/notebooks/llm_inferential_regression_py.ipynb), [`R`](https://colab.research.google.com/github/sodascience/sicss_llm_workshop/blob/main/notebooks/llm_inferential_regression_R.ipynb)     |
-| 14:30 | Conclusion & Q&A                     |                                                                                              |
+| 11:00 | Coffee break                         |                                                  |
+| 11:20 | Data collection/annotation with LLMs | [`python`](./notebooks/1sicss_llm_data_collection_py.ipynb), [`R`](./notebooks/1sicss_llm_data_collection_R.ipynb) |
+| 12:30 | Lunch break                          |                                                                       |
+| 13:30 | Local LLM inference in SANE          | [`python`](./notebooks/2sane_llm_data_collection_py.ipynb), [`R`](./notebooks/2sane_llm_data_collection_R.qmd)   |
+| 15:00 | Inference with LLM annotations       | [`python`](./notebooks/3sicss_llm_inferential_regression_py.ipynb), [`R`](./notebooks/3sicss_llm_inferential_regression_R.qmd)     |
+| 16:30 | Conclusion & Q&A                     |                                                                                              |
 
 
 ## Additional Resources
@@ -52,6 +56,7 @@ Read and cite our tutorial paper (preprint):
 - [Link](https://sodascience.github.io/soda_llm_infra_guide/)
 
 ## [Optional] Run Locally with uv and Python
+
 If you plan to run the Python notebooks locally, we recommend using [`uv`](https://github.com/astral-sh/uv) to set up a clean Python environment. You can also use `uv` to launch Jupyter Lab or Notebook.
 
 1. Clone the repository:
@@ -64,6 +69,22 @@ If you plan to run the Python notebooks locally, we recommend using [`uv`](https
 	- `uv run jupyter lab`  (or `uv run jupyter notebook`)
 
 If you use a different environment manager, make sure the dependencies in `pyproject.toml` are installed before running the notebooks.
+
+## [Optional] Run Locally with renv and R
+
+If you plan to run the R notebooks locally, we recommend using [`renv`](https://rstudio.github.io/renv/) to restore the exact package environment used in this workshop.
+
+1. Clone the repository:
+	- `git clone https://github.com/sodascience/sicss_llm_workshop.git`
+	- `cd sicss_llm_workshop`
+2. Open the project in RStudio (or start R in the repository root), then restore the environment:
+	```r
+	install.packages("renv")  # skip if renv is already installed
+	renv::restore()
+	```
+3. Open the R notebooks (`.qmd` or `.ipynb` files) and run them as usual.
+
+`renv::restore()` reads `renv.lock` and installs the exact package versions recorded there into a project-local library, so your system R installation is not affected.
 
 ## Contact
 
