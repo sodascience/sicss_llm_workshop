@@ -1,8 +1,30 @@
 # SICSS Workshop Data Collection/Annotation & Inferences with LLMs in Social Sciences
 
-This repository contains the code and slides for the SICSS workshop on data collection/annotation and inference with Large Language Models. A more general version of this repository, which is not specific to the SICSS computing infrastructure (e.g., Python 3.8.18, R 4.5.3, SANE), is available [here](https://github.com/sodascience/workshop_llm_data_collection).
+This repository contains the code and slides for the SICSS workshop on data collection/annotation and inference with Large Language Models. In particular, we cover:
+
+1. How LLMs work and how to use them in computational social science research workflows.
+2. How to use LLMs for data collection and annotation via API calls to various cloud providers, including best practices and potential pitfalls.
+3. How to run LLM inference locally on [SANE](https://odissei-data.nl/facility/secure-analysis-environment-sane/), a secure analysis environment.
+4. How to use LLM annotations in downstreaminferential regression analyses.
+
+A more general version of this repository, which is not specific to the SICSS computing infrastructure (e.g., `Python 3.8.18`, `R 4.5.3`, `SANE`), is available [here](https://github.com/sodascience/workshop_llm_data_collection).
 
 The materials on this page are [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/) licensed.
+
+
+
+## Full Workshop Schedule
+
+| Time  | Title                                | Notebooks                                                                            | Environment |
+| :---- | :----------------------------------- | :------------------------------------------------------------------------------------------- | :---------------------- |
+| 09:30 | LLM fundamentals for Social Sciences |                                                  | |
+| 11:00 | Coffee break                         |                                                  | |
+| 11:20 | Data collection/annotation with LLMs | [`python`](./notebooks/1sicss_llm_data_collection_py.ipynb), [`R`](./notebooks/1sicss_llm_data_collection_R.ipynb)| Google Colab |
+| 12:30 | Lunch break                          |                                                                       | |
+| 13:30 | Local LLM inference in SANE          | [`python`](./notebooks/2sane_llm_data_collection_py.ipynb), [`R`](./notebooks/2sane_llm_data_collection_R.qmd)   | SANE only |
+| 15:00 | Inference with LLM annotations       | [`python`](./notebooks/3sicss_llm_inferential_regression_py.ipynb), [`R`](./notebooks/3sicss_llm_inferential_regression_R.qmd)     | Google Colab or SANE |
+| 16:30 | Conclusion & Q&A                     |                                                                                              | |
+
 
 ## Technical details
 - No previous experience with LLMs is required.
@@ -10,10 +32,9 @@ The materials on this page are [CC-BY-4.0](https://creativecommons.org/licenses/
 - In python we will use [`langchain`](https://python.langchain.com/docs/introduction/), in R we will use [`ellmer`](https://ellmer.tidyverse.org/) to streamline interaction with LLM APIs.
 
 ## Preparation (API keys)
-You will need an API key for the respective provider you plan to use.
+You will need an API key for the respective provider you plan to use. An API key is a unique identifier that allows you to authenticate and interact with the provider's services.
 
-If you are attending the workshop in person, detailed instructions for obtaining API keys will be provided by the instructor separately. Otherwise, you can follow the instructions below to obtain API keys for the providers we will use in the workshop:
-
+If you are attending the workshop *in person*, detailed instructions for obtaining API keys will be provided by the instructor separately. Otherwise, you can follow the instructions below to obtain API keys for the providers we will use in the workshop:
 
 - **Hugging Face Inference API:**
 	1. Create an account at https://huggingface.co/.
@@ -32,19 +53,6 @@ If you are attending the workshop in person, detailed instructions for obtaining
 	2. Once you have access, you can create an API key at https://willma.surf.nl/.
 
 Save your API keys in a safe place. The notebooks will prompt you to enter the keys at runtime.
-
-## Full Workshop Schedule
-
-| Time  | Title                                | Notebooks                                                                            |
-| :---- | :----------------------------------- | :------------------------------------------------------------------------------------------- |
-| 09:30 | LLM fundamentals for Social Sciences |                                                  |
-| 11:00 | Coffee break                         |                                                  |
-| 11:20 | Data collection/annotation with LLMs | [`python`](./notebooks/1sicss_llm_data_collection_py.ipynb), [`R`](./notebooks/1sicss_llm_data_collection_R.ipynb) |
-| 12:30 | Lunch break                          |                                                                       |
-| 13:30 | Local LLM inference in SANE          | [`python`](./notebooks/2sane_llm_data_collection_py.ipynb), [`R`](./notebooks/2sane_llm_data_collection_R.qmd)   |
-| 15:00 | Inference with LLM annotations       | [`python`](./notebooks/3sicss_llm_inferential_regression_py.ipynb), [`R`](./notebooks/3sicss_llm_inferential_regression_R.qmd)     |
-| 16:30 | Conclusion & Q&A                     |                                                                                              |
-
 
 ## Additional Resources
 ### Tutorial Paper
