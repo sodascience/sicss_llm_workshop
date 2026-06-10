@@ -1,9 +1,5 @@
 ---
-jupyter:
-  kernelspec:
-    display_name: R
-    name: ir
-    language: R
+jupyter: ir
 ---
 
 <a href="https://colab.research.google.com/github/fqixiang/workshop_llm_data_collection/blob/main/notebooks/llm_data_collection_R.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
@@ -26,7 +22,7 @@ We encourage you to use the datasets available in SANE. The default code reuses 
 ```{r}
 #| vscode: {languageId: r}
 # Load CSV into a dataframe
-data_url <- "./data/srl_data_example.csv"
+data_url <- "../data/srl_data_example.csv"
 df <- read_csv(data_url)
 ```
 
@@ -42,13 +38,13 @@ test_conversations <- df |> slice(1:10) |> pull(conversation)
 ## Local open-weights deployment in SANE with Ollama
 
 We will use Ollama to run open-weights models locally. 
-Ollama is installed by default in the SANE environment, but you will need to pull a model and start the local server to use it.
+Ollama is installed by default in the SANE environment, but on your own machine, you will need to pull (i.e., download) a model and start the local server to use it.
 
 Example commands (run in a command line terminal):
 
 - `ollama list` (to see available models)
-- `ollama pull <model_name>` (e.g., `ollama pull qwen2.5:7b` to pull the 7B version of the Qwen2.5 model; this only needs to be done once per model)
 - `ollama serve`  (starts the local server at http://localhost:11434; skip if already running)
+- `ollama run <model_name>` (e.g., `ollama run qwen2.5:7b` to run the 7B version of the Qwen2.5 model)
 
 Currently, we have the following models available locally via Ollama:
 - qwen2.5:7b
@@ -114,7 +110,7 @@ single_response <- chat$chat(test_conversations[[1]])
 cat(single_response)
 ```
 
-Voila! You have your first successful prompting interaction with an LLM API!
+Voila! You have your first successful prompting interaction with a local LLM API!
 
 ## Working with multiple prompts
 Next, we go beyond a single prompt. Instead, we will work with **multiple prompts** at the same time.
@@ -317,21 +313,5 @@ compute_krippendorff_alpha(best_llm_specificity_scores, expert_specificity_score
 
 Wow! Much better!
 
-## Exercise: Try different prompting techniques to get better results!
-
-For example:
-
-1. Improve clarity & specificity
-2. Role-based prompting
-3. Step-by-step reasoning (Chain-of-Thought Prompting)
-4. Few-shot prompting
-5. Output structuring
-6. Self-consistency prompting
-
-Use the previous `compute_krippendorff_alpha` function to check the LLM's annotation quality.
-
-```{r}
-#| vscode: {languageId: r}
-# Let's write some code!
-```
+## Exercise: Try a different dataset of choice!
 
