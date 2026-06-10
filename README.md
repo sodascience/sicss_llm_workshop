@@ -35,7 +35,7 @@ The materials on this page are [CC-BY-4.0](https://creativecommons.org/licenses/
 ### Get Your Own API Keys
 You will need an API key for the respective LLM provider you plan to use. An API key is a unique identifier that allows you to authenticate and interact with the provider's services.
 
-If you are attending the workshop *in person*, detailed instructions for obtaining API keys will be provided by the instructor separately. Otherwise, you can follow the instructions below to obtain API keys for the providers we will use in the workshop:
+Follow the instructions below to obtain API keys for the providers we will use in the workshop. More detailed instructions will be provided by the instructor separately during the workshop. In addition, you will be provided with temporary API keys for OpenAI and SURF AI Hub that you can use during the workshop.
 
 - **Hugging Face Inference API:**
 	1. Create an account at https://huggingface.co/.
@@ -43,7 +43,7 @@ If you are attending the workshop *in person*, detailed instructions for obtaini
 
 - **OpenAI:**
 	1. Create an account at https://platform.openai.com/.
-	2. Create an API key at https://platform.openai.com/api-keys.
+	2. Create an API key at https://platform.openai.com/api-keys. Note that you need to provide billing information to get access to the API, and that there is no free trial or credit available.
 
 - **Groq:**
 	1. Create an account at https://console.groq.com/.
@@ -56,19 +56,21 @@ If you are attending the workshop *in person*, detailed instructions for obtaini
 Save your API keys in a safe place. The notebooks will prompt you to enter the keys at runtime.
 
 ### Set Up SANE and Replicate SANE Environments Locally
-See [here](https://github.com/AngelicaMaineri/odissei-sicss26-setup) for detailed instructions on how to set up your R environment in SANE and reproduce on your own local machine the exact Python and R environments installed in SANE. 
+See [here](https://github.com/AngelicaMaineri/odissei-sicss26-setup) for detailed instructions on how to set up your R environment in SANE and reproduce on your own local machine the exact Python/R environment and Ollama models installed in SANE. 
 
 ## Additional Resources
 ### Tutorial Paper
 Read and cite our tutorial paper (preprint):
-- Fang, Q., Bernardo, J. G., & van Kesteren, E. J. (2026). A Methodological Guide on Using Large Language Models for Text Annotation in the Social Sciences and Humanities with Python and R. arXiv preprint arXiv:2604.09638.
+- Fang, Q., Bernardo, J. G., & van Kesteren, E. J. (2026). A Methodological Guide on Using Large Language Models for Reproducible Text Annotation in the Social Sciences and Humanities with Python and R. arXiv preprint arXiv:2604.09638.
 - [`Download`](https://arxiv.org/abs/2604.09638) from arXiv
 
 ### Guide to LLM Computing Infrastructure in the Netherlands
 - [Link](https://sodascience.github.io/soda_llm_infra_guide/)
 
 ## [Optional] Run Locally
-Note, if you already have Python, R and Ollama set up on your local machine according to the [instructions](https://github.com/AngelicaMaineri/odissei-sicss26-setup) in the previous section, you do not need to follow the instructions in this section. You can simply download and open the notebooks in your local Python/R environment and run them directly. The instructions below are for those who want to set up a Python/R environment that satisfies the minimum requirements to run notebooks in this repository.
+Note, if you already have Python, R and Ollama set up on your local machine according to the [instructions](https://github.com/AngelicaMaineri/odissei-sicss26-setup) in the previous section, you can skip this section. That is, you can simply download and open the notebooks in your local Python/R environment and run them directly. 
+
+The instructions below are for those who want to set up a Python/R environment that satisfies the minimum requirements to run notebooks in this repository.
 
 ### With uv and Python
 
