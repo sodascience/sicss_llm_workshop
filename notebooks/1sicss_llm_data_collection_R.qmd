@@ -1,9 +1,5 @@
 ---
-jupyter:
-  kernelspec:
-    display_name: R
-    name: ir
-    language: R
+jupyter: ir
 ---
 
 <a href="https://colab.research.google.com/github/fqixiang/workshop_llm_data_collection/blob/main/notebooks/llm_data_collection_R.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
@@ -119,7 +115,7 @@ Both models support structured output (see later). To see more options, check th
 
 **SURF AI Hub**
 
-Two models are currently available on SURF AI Hub: `Llama 3.3 70b Instruct AWQ` and `openai/gpt-oss-120b`. If you want to use SURF AI Hub, set `default_provider <- "surf_ai_hub"` in the next cell.
+Two models are currently available on SURF AI Hub: `casperhansen/llama-3.3-70b-instruct-awq` and `openai/gpt-oss-120b`. If you want to use SURF AI Hub, set `default_provider <- "surf_ai_hub"` in the next cell.
 
 **OpenAI**
 
@@ -130,7 +126,7 @@ If you want OpenAI, set `default_provider <- "openai"` in the next cell. For Ope
 ```{r}
 #| vscode: {languageId: r}
 # Choose a provider (default: Groq, hosted endpoint)
-default_provider <- "huggingface"  # "surf_ai_hub" or "openai"
+default_provider <- "groq"  # "surf_ai_hub" or "openai"
 
 # Set model parameters
 temperature <- 0      # Lower is more deterministic
@@ -139,7 +135,7 @@ seed        <- NULL   # Set an integer for reproducible sampling if supported by
 
 # Set model names
 groq_model_name   <- "meta-llama/llama-4-scout-17b-16e-instruct"
-surf_ai_hub_model_name <- "Llama 3.3 70b Instruct AWQ"
+surf_ai_hub_model_name <- "casperhansen/llama-3.3-70b-instruct-awq"
 openai_model_name <- "gpt-4o-mini"
 model_names <- list(
   groq = groq_model_name,
@@ -162,9 +158,10 @@ if (default_provider == "groq") {
 # Helper: create a fresh chat object for each request
 # (prevents conversation history from bleeding between independent calls)
 make_chat <- function(system_prompt = NULL) {
-  api_args <- list(temperature = temperature, max_tokens = max_tokens)
+  api_args <- list(temperature = temperature)
   if (!is.null(seed)) api_args$seed <- seed
   if (default_provider == "groq") {
+    api_args$max_tokens <- max_tokens
     chat_groq(
       model         = model_name,
       system_prompt = system_prompt,
@@ -172,6 +169,7 @@ make_chat <- function(system_prompt = NULL) {
       echo          = "none"
     )
   } else if (default_provider == "surf_ai_hub") {
+    api_args$max_tokens <- max_tokens
     chat_openai_compatible(
       model         = model_name,
       system_prompt = system_prompt,
@@ -180,6 +178,7 @@ make_chat <- function(system_prompt = NULL) {
       base_url      = "https://willma.surf.nl/api/v0"
     )
   } else if (default_provider == "openai") {
+    api_args$max_output_tokens <- max_tokens
     chat_openai(
       model         = model_name,
       system_prompt = system_prompt,
@@ -450,7 +449,6 @@ If you prefer to run an open-weights model locally, you can use Ollama. This wor
 
 Example commands (run in a terminal) with an extremely small model (smollm, 135M parameters) for testing purposes:
 - `ollama pull smollm:135m`
-- `ollama serve`  (starts the local server at http://localhost:11434; skip if already running)
 
 ```{r}
 #| vscode: {languageId: r}
