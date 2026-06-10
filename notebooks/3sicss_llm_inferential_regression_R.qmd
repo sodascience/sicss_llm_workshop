@@ -1,10 +1,6 @@
 ---
 title: Using Large Language Models for Inferential Regression Modelling in Social Sciences
-jupyter:
-  kernelspec:
-    display_name: R
-    name: ir
-    language: R
+jupyter: ir
 ---
 
 
@@ -31,13 +27,21 @@ For this consideration, we suggest that you run the code in this notebook either
 ```{r}
 #| vscode: {languageId: r}
 # Install required packages
-if(!require(tidyverse)) install.packages("tidyverse")
-if(!require(gridExtra)) install.packages("gridExtra")
-if(!require(rlang)) install.packages("rlang")
-if(!require(devtools)) install.packages("devtools")
+packages <- unique(c(
+  "cli", "ellmer", "irr", "jsonlite", "tidyverse",
+  "rmarkdown", "devtools", "gridExtra",
+  "rlang", "here", "ggplot2", "renv"
+))
 
-library(devtools)
-install_github("naoki-egami/dsl", dependencies = TRUE)
+missing_packages <- packages[!packages %in% rownames(installed.packages())]
+if (length(missing_packages) > 0) {
+  install.packages(missing_packages)
+}
+
+if (!"dsl" %in% rownames(installed.packages())) {
+  library(devtools)
+  install_github("naoki-egami/dsl", dependencies = TRUE)
+}
 
 # Load required packages
 library(tidyverse)
@@ -49,14 +53,16 @@ library(dsl)
 
 ```{r}
 #| vscode: {languageId: r}
-# Install dsl package from the local path (for SANE users)
-library(here)
-dsl_package_path <- here("archive/dsl-master")
-install.packages(
-  dsl_package_path,
-  repos = NULL,
-  type = "source"
-)
+# Install dsl package from the local path (for SANE users) if you haven't
+if (!"dsl" %in% rownames(installed.packages())) {
+  library(here)
+  dsl_package_path <- here("archive/dsl-master")
+  install.packages(
+    dsl_package_path,
+    repos = NULL,
+    type = "source"
+  )
+}
 
 # Load required packages
 library(tidyverse)
@@ -135,8 +141,6 @@ p3 <- plot_regression(x_random, y, "X with Random Measurement Error", c(0,1,2))
 
 grid.arrange(p1, p3, ncol = 2)
 ```
-
-## Correcting measurement error in regression with the DSL package
 
 ## Correcting measurement error in regression with the DSL package
 
