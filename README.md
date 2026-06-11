@@ -1,6 +1,6 @@
 # SICSS Workshop Data Collection/Annotation & Inferences with LLMs in Social Sciences
 
-This repository contains the code and slides for the SICSS workshop on data collection/annotation and inference with Large Language Models. In particular, we cover:
+This repository contains the code and instructions for the SICSS workshop on data collection/annotation and inference with Large Language Models. In particular, we cover:
 
 1. How LLMs work and how to use them in computational social science research workflows.
 2. How to use LLMs for data collection and annotation via API calls to various cloud providers, including best practices and potential pitfalls.
@@ -8,6 +8,8 @@ This repository contains the code and slides for the SICSS workshop on data coll
 4. How to use LLM annotations in downstream inferential regression analyses.
 
 A more general version of this repository, which is not specific to the SICSS curriculum and computing infrastructure (e.g., `Python 3.8.18`, `R 4.5.3`, `SANE`), is available [here](https://github.com/sodascience/workshop_llm_data_collection).
+
+Slides for the workshop can be found [here](https://docs.google.com/presentation/d/168B2X0awEln3dwYS_W7I3cesaHCuH_j-oqd2wLioxlM/edit?usp=sharing).
 
 The materials on this page are [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/) licensed.
 
