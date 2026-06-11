@@ -2,7 +2,7 @@
 jupyter: ir
 ---
 
-<a href="https://colab.research.google.com/github/fqixiang/workshop_llm_data_collection/blob/main/notebooks/llm_data_collection_R.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+<a href="https://colab.research.google.com/github/fqixiang/sicss_llm_workshop/blob/main/notebooks/1sicss_llm_data_collection_R.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # Using Large Language Models for Data Collection/Annotation in Social Sciences and Humanities
 
